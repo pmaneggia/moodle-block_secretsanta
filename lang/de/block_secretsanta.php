@@ -33,3 +33,4 @@ $string['draw'] = 'Auslosen!';
 $string['reset'] = 'Zurücksetzen';
 $string['secretsanta:addinstance'] = 'Neuen Wichteln Block hinzufügen.';
 $string['secretsanta:draw'] = 'Auslosen und Zurücksetzen des Wichtelns.';
+$string['secretsanta:canviewresult'] = 'Das Ergebnis des Auslosens für alle Nutzer ansehen.';

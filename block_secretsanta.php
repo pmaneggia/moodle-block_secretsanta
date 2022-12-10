@@ -53,7 +53,10 @@ class block_secretsanta extends block_base {
         global $OUTPUT;
         $courseid = $this->page->course->id;
         $context = context_course::instance($courseid);
-        $users = enrol_get_course_users($courseid);
+        $usersarray = (json_decode(json_encode(enrol_get_course_users($courseid)), true));
+        $userids = array_keys($usersarray);
+        $users = $userids;
+        $pairs = $this->draw($userids);
 
         // If content is cached.
         if ($this->content !== null) {
@@ -65,6 +68,8 @@ class block_secretsanta extends block_base {
         $data->drawn = false;
         $data->candraw = $this->can_draw($context);
         $data->users = print_r($users, true);
+        $data->pairs = print_r($pairs, true);
+        $data->canviewresult = $this->can_view_result($context);
 
         $this->content = new stdClass();
         $this->content->text = $OUTPUT->render_from_template('block_secretsanta/content', $data);;
@@ -75,5 +80,43 @@ class block_secretsanta extends block_base {
 
     public function can_draw($context) {
         return has_capability('block/secretsanta:draw', $context);
+    }
+
+    public function can_view_result($context) {
+        return has_capability('block/secretsanta:canviewresult', $context);
+    }
+
+    /**
+     * Draw secret santa among the given userids.
+     * The result is a array of pairs of id [from, to].
+     * It is always going to correspond to a full length cycle:
+     * Draw the first user and remove it from the input;
+     * while some users are still left, draw a further user;
+     * this will be the target of the previously drawn user.
+     * The last user left closes the cycle being paired with the first one.
+     * @param array $userids array of userids.
+     * @return array<int[]> array of pairs if int [from, to].
+     */
+    public function draw($userids) {
+        if(!count($userids) > 1) {
+            debugging('block Secret Santa: not enough users to play');
+            return [];
+        }
+        $result = [];
+        $currentdrawkey = array_rand($userids);
+        $firstdraw = $userids[$currentdrawkey];
+        $currentdraw = $firstdraw;
+        unset($userids[$currentdrawkey]);
+        $remaining = $userids;
+        while (count($remaining) > 0) {
+            $newdrawindex = array_rand($remaining);
+            $newdraw = $remaining[$newdrawindex];
+            array_push($result, [$currentdraw, $newdraw]);
+            unset($remaining[$newdrawindex]);
+            $currentdrawkey = $newdrawindex;
+            $currentdraw = $newdraw;
+        }
+        array_push($result, [$currentdraw, $firstdraw]);
+        return $result;
     }
 }

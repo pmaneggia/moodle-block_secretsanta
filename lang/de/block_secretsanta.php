@@ -31,3 +31,5 @@ $string['you_are'] = 'Du bist der Wichtel von ';
 $string['waiting'] = '... noch nicht ausgelost!';
 $string['draw'] = 'Auslosen!';
 $string['reset'] = 'Zurücksetzen';
+$string['secretsanta:addinstance'] = 'Neuen Wichteln Block hinzufügen.';
+$string['secretsanta:draw'] = 'Auslosen und Zurücksetzen des Wichtelns.';

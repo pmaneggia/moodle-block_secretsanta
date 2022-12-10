@@ -31,3 +31,6 @@ $string['you_are'] = 'You are the Secret Santa of ';
 $string['waiting'] = 'Waiting for the draw...';
 $string['draw'] = 'draw!';
 $string['reset'] = 'reset';
+$string['secretsanta:addinstance'] = 'Add a new Secret Santa block.';
+$string['secretsanta:draw'] = 'Draw and reset Secret Santa.';
+

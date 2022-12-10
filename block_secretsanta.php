@@ -63,7 +63,7 @@ class block_secretsanta extends block_base {
         $data = new stdClass();
         $data->name = 'A name';
         $data->drawn = false;
-        $data->candraw = true;
+        $data->candraw = $this->can_draw($context);
         $data->users = print_r($users, true);
 
         $this->content = new stdClass();
@@ -73,7 +73,7 @@ class block_secretsanta extends block_base {
         return $this->content;
     }
 
-    public function can_draw() {
-        return has_capability('block/secretsanta:draw');
+    public function can_draw($context) {
+        return has_capability('block/secretsanta:draw', $context);
     }
 }

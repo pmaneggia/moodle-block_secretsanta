@@ -23,12 +23,13 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Secret Santa block';
+$string['pluginname'] = 'Secret Santa';
 $string['secretsanta'] = 'Secret Santa';
 $string['privacy:metadata'] = 'The block secretsanta ....';
 $string['block/secretsanta:addinstance'] = 'Add a new instance Secret Santa block to the course.';
 $string['you_are'] = 'You are the Secret Santa of ';
 $string['waiting'] = 'Waiting for the draw...';
+$string['toofewusers'] = 'There are two few users to do Secret Santa. At least three (better four) users required';
 $string['draw'] = 'draw!';
 $string['reset'] = 'reset';
 $string['secretsanta:addinstance'] = 'Add a new Secret Santa block.';

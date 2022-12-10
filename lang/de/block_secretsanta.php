@@ -23,12 +23,13 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Wichteln Block';
+$string['pluginname'] = 'Wichteln';
 $string['secretsanta'] = 'Wichteln';
 $string['privacy:metadata'] = 'Der Wichteln Block ....';
 $string['block/secretsanta:addinstance'] = 'Einen Wichteln Block hinzufügen.';
 $string['you_are'] = 'Du bist der Wichtel von ';
 $string['waiting'] = '... noch nicht ausgelost!';
+$string['toofewusers'] = 'Zu wenige Nutzer, um zu wichteln. Es sind mindestens drei (besser vier) Nutzer nötig.';
 $string['draw'] = 'Auslosen!';
 $string['reset'] = 'Zurücksetzen';
 $string['secretsanta:addinstance'] = 'Neuen Wichteln Block hinzufügen.';

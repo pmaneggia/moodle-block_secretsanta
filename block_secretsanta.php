@@ -53,10 +53,11 @@ class block_secretsanta extends block_base {
         global $OUTPUT;
         $courseid = $this->page->course->id;
         $context = context_course::instance($courseid);
-        $usersarray = (json_decode(json_encode(enrol_get_course_users($courseid)), true));
+        $userobjects = enrol_get_course_users($courseid);
+        $usersarray = json_decode(json_encode($userobjects), true);
         $userids = array_keys($usersarray);
         $users = $userids;
-        $pairs = $this->draw($userids);
+        $pairs = $this->compute_draw($userids);
 
         // If content is cached.
         if ($this->content !== null) {
@@ -64,6 +65,7 @@ class block_secretsanta extends block_base {
         }
 
         $data = new stdClass();
+        $data->toofewusers = empty($userobjects) || count($userobjects) < 3;
         $data->name = 'A name';
         $data->drawn = false;
         $data->candraw = $this->can_draw($context);
@@ -97,8 +99,8 @@ class block_secretsanta extends block_base {
      * @param array $userids array of userids.
      * @return array<int[]> array of pairs if int [from, to].
      */
-    public function draw($userids) {
-        if(!count($userids) > 1) {
+    public function compute_draw($userids) {
+        if(empty($userids) || !count($userids) > 1) {
             debugging('block Secret Santa: not enough users to play');
             return [];
         }
@@ -118,5 +120,26 @@ class block_secretsanta extends block_base {
         }
         array_push($result, [$currentdraw, $firstdraw]);
         return $result;
+    }
+
+    /**
+     * Retrieve draw from DB, now just compute on the fly
+     */
+    public function get_draw() {
+
+    }
+
+    /**
+     * Save draw in the DB.
+     */
+    public function save_draw() {
+
+    }
+
+    /**
+     * Delete draw from the DB.
+     */
+    public function delete_draw() {
+
     }
 }

@@ -1,4 +1,6 @@
-# Block Secret Santa (`block_secretsanta`)
+# Block Secret Santa `block_secretsanta` (Wichteln)
+
+### WIP - not ready yet!
 
 It is this time of the year again! Play Secret Santa with your friends in a Moodle course with this plugin! Just straighforward, no extras (no opt in or out, no exclusion of people, no wishes/interests...). Maybe there will be a graphical representation of the graph for users with enough rights...
 

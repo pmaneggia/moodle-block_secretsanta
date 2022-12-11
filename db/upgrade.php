@@ -32,7 +32,7 @@ function xmldb_block_secretsanta_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2022121006) {
+    if ($oldversion < 2022121100) {
 
         // Define table block_secretsanta to be created.
         $table = new xmldb_table('block_secretsanta');
@@ -52,7 +52,7 @@ function xmldb_block_secretsanta_upgrade($oldversion) {
         }
 
         // Secretsanta savepoint reached.
-        upgrade_block_savepoint(true, 2022121006, 'secretsanta');
+        upgrade_block_savepoint(true, 2022121100, 'secretsanta');
     }
 
     return true;

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Play Secret Santa with the course participants!
+ * Do Secret Santa with the course participants!
  *
  * @package    block_secretsanta
  * @copyright  2022 Paola Maneggia
@@ -31,15 +31,6 @@ require_once("{$CFG->libdir}/modinfolib.php");
  * Play Secret Santa in a course.
  */
 class block_secretsanta extends block_base {
-
-    /** Id relative to the current block instance from the table {block_secretsanta}. */
-    private int $instanceid;
-
-    /** State of the current block instance. */
-    private int $state;
-
-    /** Draw of the current block instance. */
-    private string $draw;
 
     /**
      * {@inheritDoc}
@@ -64,8 +55,8 @@ class block_secretsanta extends block_base {
         $course = $this->page->course;
         $data = new stdClass();
         $data->courseid = $course->id;
-        $data->state = $this->state = 0;
-        $data->draw = $this->draw = '';
+        $data->state = 0;
+        $data->draw = '';
         $this->instanceid = $DB->insert_record('block_secretsanta', $data);
     }
 
@@ -87,32 +78,22 @@ class block_secretsanta extends block_base {
             return $this->content;
         }
 
-        global $OUTPUT, $DB;
-
-        // Load the state from the database.
+        global $OUTPUT, $USER;
         $courseid = $this->page->course->id;
-        if (empty($this->instanceid)) {
-            $result = $DB->get_record('block_secretsanta', ['courseid' => $courseid], 'id, state, draw', MUST_EXIST);
-        }
-        $this->instanceid = $result->id;
-        $this->state = $result->state;
-        $this->draw = $result->draw;
-
-        // Get the users enrolled in the course.
         $context = context_course::instance($courseid);
-        $userobjects = enrol_get_course_users($courseid);
-        $usersarray = json_decode(json_encode($userobjects), true);
-        $userids = array_keys($usersarray);
-        $users = $userids;
-        $pairs = $this->compute_draw($userids);
+
+        $userids = \block_secretsanta\secretsanta::get_enrolled_user_ids($courseid);
 
         $data = new stdClass();
-        $data->toofewusers = empty($userobjects) || count($userobjects) < 3;
-        $data->name = 'A name';
-        $data->drawn = $this->state === 1;
+        $data->name = \block_secretsanta\secretsanta::get_draw_for_user($courseid, $USER->id);
+        $data->toofewusers = empty($userids) || count($userids) < 3;
+        // drawn false in initial state (0), drawn true in draw state (1)
+        $data->drawn = \block_secretsanta\secretsanta::get_state($courseid) === 1;
         $data->candraw = $this->can_draw($context);
-        $data->users = print_r($users, true);
-        $data->pairs = print_r($pairs, true);
+        $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
+        $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
+        $data->users = print_r(get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id, u.firstname, u.lastname'), true);
+        $data->pairs = print_r(\block_secretsanta\secretsanta::get_draw($courseid), true);
         $data->canviewresult = $this->can_view_result($context);
 
         $this->content = new stdClass();
@@ -128,40 +109,6 @@ class block_secretsanta extends block_base {
 
     public function can_view_result($context) {
         return has_capability('block/secretsanta:canviewresult', $context);
-    }
-
-    /**
-     * Draw secret santa among the given userids.
-     * The result is a array of pairs of id [from, to].
-     * It is always going to correspond to a full length cycle:
-     * Draw the first user and remove it from the input;
-     * while some users are still left, draw a further user;
-     * this will be the target of the previously drawn user.
-     * The last user left closes the cycle being paired with the first one.
-     * @param array $userids array of userids.
-     * @return array<int[]> array of pairs if int [from, to].
-     */
-    public function compute_draw($userids) {
-        if(empty($userids) || !count($userids) > 1) {
-            debugging('block Secret Santa: not enough users to play');
-            return [];
-        }
-        $result = [];
-        $currentdrawkey = array_rand($userids);
-        $firstdraw = $userids[$currentdrawkey];
-        $currentdraw = $firstdraw;
-        unset($userids[$currentdrawkey]);
-        $remaining = $userids;
-        while (count($remaining) > 0) {
-            $newdrawindex = array_rand($remaining);
-            $newdraw = $remaining[$newdrawindex];
-            array_push($result, [$currentdraw, $newdraw]);
-            unset($remaining[$newdrawindex]);
-            $currentdrawkey = $newdrawindex;
-            $currentdraw = $newdraw;
-        }
-        array_push($result, [$currentdraw, $firstdraw]);
-        return $result;
     }
 
 }

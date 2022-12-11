@@ -1,8 +1,21 @@
 # Block Secret Santa `block_secretsanta` (Wichteln)
 
-### WIP - not ready yet!
+### WIP - not ready yet, but it is already usable!
 
-It is this time of the year again! Do Secret Santa with your friends in a Moodle course with this plugin! Just straighforward, no extras (no opt in or out, no exclusion of people, no wishes/interests...). Maybe there will be a graphical representation of the graph for users with enough rights...
+It is this time of the year again! Do Secret Santa with your friends in a Moodle course with this plugin! Just straighforward, no extras (no opt in or out, no exclusion of people, no wishes/interests...).
+
+#### How it works
+Teachers (editingteacher) can perform the actions "draw" and "reset", they have buttons on the block to do so. Managers can also view the result of the draw, this is not normally shown to teachers, so that they can also take part without spoilers. Normal users enrolled in the course see the result of the draw that is relevant for themeselves or a text saying that the draw did not take place yet.
+
+
+In some future versions there will be:
+
+* An option to exclude the teachers from taking part.
+* A graphical representation of the result of the draw.
+
+
+The behaviour described above is controlled by capabilites (`secretsanta:draw` by default set to allow for `editingteacher` and manager and `secretsanta:canviewresult` set to allow for role `manager`).
+
 
 #### Installation
 1. Copy the content of this directory into the folder `blocks/secretsanta` inside your moodle installation.

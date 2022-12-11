@@ -32,6 +32,15 @@ require_once("{$CFG->libdir}/modinfolib.php");
  */
 class block_secretsanta extends block_base {
 
+    /** Id relative to the current block instance from the table {block_secretsanta}. */
+    private int $instanceid;
+
+    /** State of the current block instance. */
+    private int $state;
+
+    /** Draw of the current block instance. */
+    private string $draw;
+
     /**
      * {@inheritDoc}
      */
@@ -49,9 +58,47 @@ class block_secretsanta extends block_base {
     /**
      * {@inheritDoc}
      */
+    public function instance_create() {
+        // Add an entry to the table {block_secretsanta} representing an instance in initial state.
+        global $DB;
+        $course = $this->page->course;
+        $data = new stdClass();
+        $data->courseid = $course->id;
+        $data->state = $this->state = 0;
+        $data->draw = $this->draw = '';
+        $this->instanceid = $DB->insert_record('block_secretsanta', $data);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    function instance_delete() {
+        global $DB;
+        $DB->delete_records('block_secretsanta', ['courseid' => $this->page->course->id]);
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function get_content() {
-        global $OUTPUT;
+        // If content is cached.
+        if ($this->content !== null) {
+            return $this->content;
+        }
+
+        global $OUTPUT, $DB;
+
+        // Load the state from the database.
         $courseid = $this->page->course->id;
+        if (empty($this->instanceid)) {
+            $result = $DB->get_record('block_secretsanta', ['courseid' => $courseid], 'id, state, draw', MUST_EXIST);
+        }
+        $this->instanceid = $result->id;
+        $this->state = $result->state;
+        $this->draw = $result->draw;
+
+        // Get the users enrolled in the course.
         $context = context_course::instance($courseid);
         $userobjects = enrol_get_course_users($courseid);
         $usersarray = json_decode(json_encode($userobjects), true);
@@ -59,15 +106,10 @@ class block_secretsanta extends block_base {
         $users = $userids;
         $pairs = $this->compute_draw($userids);
 
-        // If content is cached.
-        if ($this->content !== null) {
-            return $this->content;
-        }
-
         $data = new stdClass();
         $data->toofewusers = empty($userobjects) || count($userobjects) < 3;
         $data->name = 'A name';
-        $data->drawn = false;
+        $data->drawn = $this->state === 1;
         $data->candraw = $this->can_draw($context);
         $data->users = print_r($users, true);
         $data->pairs = print_r($pairs, true);
@@ -122,24 +164,4 @@ class block_secretsanta extends block_base {
         return $result;
     }
 
-    /**
-     * Retrieve draw from DB, now just compute on the fly
-     */
-    public function get_draw() {
-
-    }
-
-    /**
-     * Save draw in the DB.
-     */
-    public function save_draw() {
-
-    }
-
-    /**
-     * Delete draw from the DB.
-     */
-    public function delete_draw() {
-
-    }
 }

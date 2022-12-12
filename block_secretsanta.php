@@ -92,7 +92,13 @@ class block_secretsanta extends block_base {
         $data->candraw = $this->can_draw($context);
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
-        $data->users = print_r(get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id, u.firstname, u.lastname'), true);
+        $data->users = print_r(
+            array_map(
+                fn($element) => ': ' . $element['firstname'] . ' ' . $element['lastname'],
+                json_decode(json_encode(get_enrolled_users($context, '', 0, 'u.id, u.firstname, u.lastname')), true)
+            ),
+            true
+        );
         $data->pairs = print_r(\block_secretsanta\secretsanta::get_draw($courseid), true);
         $data->canviewresult = $this->can_view_result($context);
 

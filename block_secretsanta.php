@@ -85,16 +85,16 @@ class block_secretsanta extends block_base {
         $userids = \block_secretsanta\secretsanta::get_enrolled_user_ids($courseid);
 
         $data = new stdClass();
-        $data->name = \block_secretsanta\secretsanta::get_draw_for_user($courseid, $USER->id);
         $data->toofewusers = empty($userids) || count($userids) < 3;
         // drawn false in initial state (0), drawn true in draw state (1)
         $data->drawn = \block_secretsanta\secretsanta::get_state($courseid) === 1;
-        $data->candraw = $this->can_draw($context);
+        $data->name = $data->toofewusers || !$data->drawn ? '' : \block_secretsanta\secretsanta::get_draw_for_user($courseid, $USER->id);
+        $data->candraw = $this->can_draw($context) && !$data->toofewusers;
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
         $data->users = print_r(
             array_map(
-                fn($element) => ': ' . $element['firstname'] . ' ' . $element['lastname'],
+                fn($element) => $element['firstname'] . ' ' . $element['lastname'],
                 json_decode(json_encode(get_enrolled_users($context, '', 0, 'u.id, u.firstname, u.lastname')), true)
             ),
             true

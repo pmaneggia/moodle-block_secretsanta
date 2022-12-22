@@ -32,60 +32,47 @@ defined('MOODLE_INTERNAL') || die();
 class secretsanta {
 
     /** Id relative to the current block instance from the table {block_secretsanta}. */
-    private static int $instanceid;
+    private int $instanceid;
 
     /** State of the current block instance. */
-    private static int $state;
+    private int $state;
 
     /** Draw of the current block instance. */
-    private static string $draw;
+    private string $draw;
 
-    public static function draw($courseid) {
-        self::set_state($courseid, 1);
-        self::save_draw($courseid, json_encode(self::compute_draw(self::get_enrolled_user_ids($courseid))));
+    public function draw($courseid) {
+        $this->save_draw($courseid, json_encode($this->compute_draw($this->get_enrolled_user_ids($courseid))));
     }
 
-    public static function reset($courseid) {
-        self::set_state($courseid, 0);
-        self::clean_draw($courseid);
+    public function reset($courseid) {
+        $this->clean_draw($courseid);
     }
 
-    protected static function set_state($courseid, $state) {
+    protected function save_draw($courseid, $draw) {
         global $DB;
         $dataobject = new stdClass();
-        if (empty(self::$instanceid)) {
-            self::load_secretsanta($courseid);
+        if (empty($this->instanceid)) {
+            $this->load_secretsanta($courseid);
         }
-        $dataobject->id = self::$instanceid;
-        $dataobject->courseid = $courseid;
-        $dataobject->state = $state;
-        self::$state = $state;
-        $DB->update_record('block_secretsanta', $dataobject);
-    }
-
-    protected static function save_draw($courseid, $draw) {
-        global $DB;
-        $dataobject = new stdClass();
-        if (empty(self::$instanceid)) {
-            self::load_secretsanta($courseid);
-        }
-        $dataobject->id = self::$instanceid;
+        $dataobject->id = $this->instanceid;
         $dataobject->courseid = $courseid;
         $dataobject->draw = $draw;
-        self::$draw = $draw;
+        $dataobject->state = 1;
+        $this->draw = $draw;
         $DB->update_record('block_secretsanta', $dataobject);
     }
 
-    protected static function clean_draw($courseid) {
+    protected function clean_draw($courseid) {
         global $DB;
         $dataobject = new stdClass();
-        if (empty(self::$instanceid)) {
-            self::load_secretsanta($courseid);
+        if (empty($this->instanceid)) {
+            $this->load_secretsanta($courseid);
         }
-        $dataobject->id = self::$instanceid;
+        $dataobject->id = $this->instanceid;
         $dataobject->courseid = $courseid;
         $dataobject->draw = '';
-        self::$draw = '';
+        $dataobject->state = 0;
+        $this->draw = '';
         $DB->update_record('block_secretsanta', $dataobject);
     }
 
@@ -94,8 +81,8 @@ class secretsanta {
      * @param $courseid
      * @return int[]
      */
-    public static function get_enrolled_user_ids($courseid) {
-        return $userids = array_map(
+    public function get_enrolled_user_ids($courseid) {
+        return array_map(
             fn ($element) => (int)$element['id'],
             json_decode(json_encode(get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id')), true)
         );
@@ -104,7 +91,7 @@ class secretsanta {
     /**
      * Get array of useris, firstname and lastname fields of users enrolled in course.
      */
-    protected static function get_enrolled_user_infos($courseid) {
+    protected function get_enrolled_user_infos($courseid) {
         return get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id, u.firstname, u.lastname');
     }
 
@@ -119,12 +106,14 @@ class secretsanta {
      * @param array $userids array of userids.
      * @return array<int[]> array of pairs if int [from, to].
      */
-    protected static function compute_draw($userids) {
-        if(empty($userids) || !count($userids) > 1) {
-            debugging('block Secret Santa: not enough users to play');
-            return [];
-        }
+    protected function compute_draw($userids) {
         $result = [];
+
+        if (empty($userids) || !count($userids) > 1) {
+            debugging('block Secret Santa: not enough users to play');
+            return $result;
+        }
+
         $currentdrawkey = array_rand($userids);
         $firstdraw = $userids[$currentdrawkey];
         $currentdraw = $firstdraw;
@@ -147,12 +136,11 @@ class secretsanta {
      * @param int $courseid id of the course to which this instance of block_secresanta belongs.
      * @return string representing the draw or the empty string if no draw was saved.
      */
-    public static function get_draw($courseid) {
-        global $DB;
-        if (empty(self::$instanceid)) {
-            self::load_secretsanta($courseid);
-        } // TODO make up your mind! this or self::$state
-        return $DB->get_field('block_secretsanta', 'draw', ['id' => self::$instanceid, 'courseid' => $courseid], MUST_EXIST);
+    public function get_draw($courseid) {
+        if (empty($this->instanceid)) {
+            $this->load_secretsanta($courseid);
+        }
+        return $this->draw;
     }
 
     /**
@@ -160,13 +148,11 @@ class secretsanta {
      * @param int $courseid id of the course to which this instance of block_secresanta belongs.
      * @return int 0 for initial, 1 for draw.
      */
-    public static function get_state($courseid) {
-        global $DB;
-        $dataobject = new stdClass();
-        if (empty(self::$instanceid)) {
-            self::load_secretsanta($courseid);
-        } // TODO make up your mind! this or self::$state
-        return (int)$DB->get_field('block_secretsanta', 'state', ['id' => self::$instanceid, 'courseid' => $courseid], MUST_EXIST);
+    public function get_state($courseid) {
+        if (empty($this->instanceid)) {
+            $this->load_secretsanta($courseid);
+        }
+        return $this->state;
     }
 
     /**
@@ -175,12 +161,12 @@ class secretsanta {
      * @param int $userid id of the user for which we return the drawn match.
      * @return string containing name and surname of the drawn match.
      */
-    public static function get_draw_for_user($courseid, $userid) {
-        $draw = self::get_draw($courseid);
+    public function get_draw_for_user($courseid, $userid) {
+        $draw = $this->get_draw($courseid);
         if (empty($draw)) {
             return '';
         }
-        $usersinfos = json_decode(json_encode(self::get_enrolled_user_infos($courseid)), true);
+        $usersinfos = json_decode(json_encode($this->get_enrolled_user_infos($courseid)), true);
         $targetuserid = (
             array_values(
                 array_filter(
@@ -189,21 +175,21 @@ class secretsanta {
                 )
             )[0]
         )[1];
-        $targetuserinfos = self::get_enrolled_user_infos($courseid)[$targetuserid];
+        $targetuserinfos = $this->get_enrolled_user_infos($courseid)[$targetuserid];
         return $targetuserinfos->firstname . ' ' . $targetuserinfos->lastname;
     }
 
     /**
      * Load the current data for this course from the database.
      */
-    public static function load_secretsanta($courseid) {
+    public function load_secretsanta($courseid) {
         global $DB;
-        if (empty(self::$instanceid)) {
+        if (empty($this->instanceid)) {
             $result = $DB->get_record('block_secretsanta', ['courseid' => $courseid], 'id, state, draw', MUST_EXIST);
         }
-        self::$instanceid = $result->id;
-        self::$state = $result->state;
-        self::$draw = $result->draw;
+        $this->instanceid = $result->id;
+        $this->state = $result->state;
+        $this->draw = $result->draw;
     }
 
 }

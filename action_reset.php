@@ -51,7 +51,7 @@ if (!$confirm) {
     echo $OUTPUT->confirm(get_string('reset', 'block_secretsanta'), $optionsyes, $optionsno);
 } else {
     if (confirm_sesskey()) {
-        \block_secretsanta\secretsanta::reset($courseid);
+        (new \block_secretsanta\secretsanta($courseid))->reset();
     } else {
         print_error('sessionerror', 'block_simplehtml');
     }

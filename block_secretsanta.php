@@ -81,14 +81,15 @@ class block_secretsanta extends block_base {
         global $OUTPUT, $USER;
         $courseid = $this->page->course->id;
         $context = context_course::instance($courseid);
+        $secretsanta = new \block_secretsanta\secretsanta($courseid);
 
-        $userids = \block_secretsanta\secretsanta::get_enrolled_user_ids($courseid);
+        $userids = $secretsanta->get_enrolled_user_ids();
 
         $data = new stdClass();
         $data->toofewusers = empty($userids) || count($userids) < 3;
         // drawn false in initial state (0), drawn true in draw state (1)
-        $data->drawn = \block_secretsanta\secretsanta::get_state($courseid) === 1;
-        $data->name = $data->toofewusers || !$data->drawn ? '' : \block_secretsanta\secretsanta::get_draw_for_user($courseid, $USER->id);
+        $data->drawn = $secretsanta->get_state() === 1;
+        $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_current_user();
         $data->candraw = $this->can_draw($context) && !$data->toofewusers;
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
@@ -99,7 +100,7 @@ class block_secretsanta extends block_base {
             ),
             true
         );
-        $data->pairs = print_r(\block_secretsanta\secretsanta::get_draw($courseid), true);
+        $data->pairs = print_r($secretsanta->get_draw(), true);
         $data->canviewresult = $this->can_view_result($context);
 
         $this->content = new stdClass();

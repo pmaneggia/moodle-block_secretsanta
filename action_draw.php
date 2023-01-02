@@ -51,7 +51,7 @@ if (!$confirm) {
     echo $OUTPUT->confirm(get_string('draw', 'block_secretsanta'), $optionsyes, $optionsno);
 } else {
     if (confirm_sesskey()) {
-        \block_secretsanta\secretsanta::draw($courseid);
+        (new \block_secretsanta\secretsanta($courseid))->draw();
     } else {
         print_error('sessionerror', 'block_simplehtml');
     }

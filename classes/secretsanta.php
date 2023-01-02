@@ -31,6 +31,9 @@ defined('MOODLE_INTERNAL') || die();
 
 class secretsanta {
 
+    /** Id of the course this block instance has been added to. */
+    private int $courseid;
+
     /** Id relative to the current block instance from the table {block_secretsanta}. */
     private int $instanceid;
 
@@ -40,36 +43,48 @@ class secretsanta {
     /** Draw of the current block instance. */
     private string $draw;
 
-    public function draw($courseid) {
-        $this->save_draw($courseid, json_encode($this->compute_draw($this->get_enrolled_user_ids($courseid))));
+    /** Ids of users enrolled in the course. */
+    private array $enrolled_user_ids;
+
+    /** Infos (id, firstname, lastname) of users enrolled in the course. */
+    private array $enrolled_user_infos;
+
+    /**
+     * Initialise the fields of this object for a given courseid.
+     */
+    public function __construct($courseid) {
+        $this->courseid = $courseid;
+        $this->load_data();
+        $this->populate_user_fields();
     }
 
-    public function reset($courseid) {
-        $this->clean_draw($courseid);
+    public function draw() {
+        $this->save_draw(json_encode($this->compute_draw($this->enrolled_user_ids)));
     }
 
-    protected function save_draw($courseid, $draw) {
+    public function reset() {
+        $this->clean_draw();
+    }
+
+    protected function save_draw($draw) {
         global $DB;
         $dataobject = new stdClass();
         if (empty($this->instanceid)) {
-            $this->load_secretsanta($courseid);
+            $this->load_data();
         }
         $dataobject->id = $this->instanceid;
-        $dataobject->courseid = $courseid;
+        $dataobject->courseid = $this->courseid;
         $dataobject->draw = $draw;
         $dataobject->state = 1;
         $this->draw = $draw;
         $DB->update_record('block_secretsanta', $dataobject);
     }
 
-    protected function clean_draw($courseid) {
+    protected function clean_draw() {
         global $DB;
         $dataobject = new stdClass();
-        if (empty($this->instanceid)) {
-            $this->load_secretsanta($courseid);
-        }
         $dataobject->id = $this->instanceid;
-        $dataobject->courseid = $courseid;
+        $dataobject->courseid = $this->courseid;
         $dataobject->draw = '';
         $dataobject->state = 0;
         $this->draw = '';
@@ -77,22 +92,18 @@ class secretsanta {
     }
 
     /**
-     * Get userids of users enrolled in course.
-     * @param $courseid
+     * Get userids of users enrolled in the course this instance belongs to.
      * @return int[]
      */
-    public function get_enrolled_user_ids($courseid) {
-        return array_map(
-            fn ($element) => (int)$element['id'],
-            json_decode(json_encode(get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id')), true)
-        );
+    public function get_enrolled_user_ids() {
+        return $this->enrolled_user_ids;
     }
 
     /**
-     * Get array of useris, firstname and lastname fields of users enrolled in course.
+     * Get array of userids, firstname and lastname fields of users enrolled in course.
      */
-    protected function get_enrolled_user_infos($courseid) {
-        return get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id, u.firstname, u.lastname');
+    protected function get_enrolled_user_infos() {
+        return $this->enrolled_user_infos;
     }
 
     /**
@@ -132,64 +143,60 @@ class secretsanta {
     }
 
     /**
-     * Get the draw for the current block_secretsanta instance in course with given id.
-     * @param int $courseid id of the course to which this instance of block_secresanta belongs.
+     * Get the draw for the current block_secretsanta instance.
      * @return string representing the draw or the empty string if no draw was saved.
      */
-    public function get_draw($courseid) {
-        if (empty($this->instanceid)) {
-            $this->load_secretsanta($courseid);
-        }
+    public function get_draw() {
         return $this->draw;
     }
 
     /**
-     * Get the state for the current block_secretsanta instance in course with given id.
-     * @param int $courseid id of the course to which this instance of block_secresanta belongs.
+     * Get the state for the current block_secretsanta instance.
      * @return int 0 for initial, 1 for draw.
      */
-    public function get_state($courseid) {
-        if (empty($this->instanceid)) {
-            $this->load_secretsanta($courseid);
-        }
+    public function get_state() {
         return $this->state;
     }
 
     /**
      * Get the name of the user drawn for the current user.
-     * @param int $courseid id of the course of this instance of block_secretsanta.
-     * @param int $userid id of the user for which we return the drawn match.
      * @return string containing name and surname of the drawn match.
      */
-    public function get_draw_for_user($courseid, $userid) {
-        $draw = $this->get_draw($courseid);
+    public function get_draw_for_current_user() {
+        global $USER;
+        $draw = $this->draw;
         if (empty($draw)) {
             return '';
         }
-        $usersinfos = json_decode(json_encode($this->get_enrolled_user_infos($courseid)), true);
         $targetuserid = (
             array_values(
                 array_filter(
                     json_decode($draw, true),
-                    fn ($element) => (int)$element[0] === (int)$userid
+                    fn ($element) => (int)$element[0] === (int)$USER->id
                 )
             )[0]
         )[1];
-        $targetuserinfos = $this->get_enrolled_user_infos($courseid)[$targetuserid];
+        $targetuserinfos = $this->enrolled_user_infos[$targetuserid];
         return $targetuserinfos->firstname . ' ' . $targetuserinfos->lastname;
     }
 
     /**
-     * Load the current data for this course from the database.
+     * Load the current data for this instance from the database.
      */
-    public function load_secretsanta($courseid) {
+    public function load_data() {
         global $DB;
-        if (empty($this->instanceid)) {
-            $result = $DB->get_record('block_secretsanta', ['courseid' => $courseid], 'id, state, draw', MUST_EXIST);
-        }
-        $this->instanceid = $result->id;
-        $this->state = $result->state;
-        $this->draw = $result->draw;
+        $data = $DB->get_record('block_secretsanta', ['courseid' => $this->courseid], 'id, state, draw', MUST_EXIST);
+        $this->instanceid = $data->id;
+        $this->state = $data->state;
+        $this->draw = $data->draw;
+    }
+
+    /**
+     * Populate user fields relevant for the draw.
+     */
+    private function populate_user_fields() {
+        $this->enrolled_user_infos = get_enrolled_users(\context_course::instance($this->courseid), '', 0, 'u.id, u.firstname, u.lastname');
+        $this->enrolled_user_ids = array_keys($this->enrolled_user_infos);
     }
 
 }

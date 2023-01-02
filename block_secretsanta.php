@@ -52,12 +52,11 @@ class block_secretsanta extends block_base {
     public function instance_create() {
         // Add an entry to the table {block_secretsanta} representing an instance in initial state.
         global $DB;
-        $course = $this->page->course;
         $data = new stdClass();
-        $data->courseid = $course->id;
-        $data->state = 0;
+        $data->courseid = $this->page->course->id;
+        $data->state = \block_secretsanta\secretsanta::STATE_INITIAL;
         $data->draw = '';
-        $this->instanceid = $DB->insert_record('block_secretsanta', $data);
+        $DB->insert_record('block_secretsanta', $data);
     }
 
     /**
@@ -77,19 +76,26 @@ class block_secretsanta extends block_base {
         if ($this->content !== null) {
             return $this->content;
         }
+        global $OUTPUT;
+        $this->content = new stdClass();
+        $this->content->text = $OUTPUT->render_from_template('block_secretsanta/content', $this->compute_data());
+        $this->content->footer = '';
+        return $this->content;
+    }
 
-        global $OUTPUT, $USER;
+    protected function compute_data() {
         $courseid = $this->page->course->id;
         $context = context_course::instance($courseid);
         $secretsanta = new \block_secretsanta\secretsanta($courseid);
+        return $this->extract_data($courseid, $context, $secretsanta);
+    }
 
-        $userids = $secretsanta->get_enrolled_user_ids();
-
+    protected function extract_data($courseid, $context, $secretsanta) {
+        global $USER;
         $data = new stdClass();
-        $data->toofewusers = empty($userids) || count($userids) < 3;
-        // drawn false in initial state (0), drawn true in draw state (1)
-        $data->drawn = $secretsanta->get_state() === 1;
-        $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_current_user();
+        $data->toofewusers = $secretsanta->has_too_few_users();
+        $data->drawn = $secretsanta->is_drawn();
+        $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_user((int)$USER->id);
         $data->candraw = $this->can_draw($context) && !$data->toofewusers;
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
@@ -102,12 +108,7 @@ class block_secretsanta extends block_base {
         );
         $data->pairs = print_r($secretsanta->get_draw(), true);
         $data->canviewresult = $this->can_view_result($context);
-
-        $this->content = new stdClass();
-        $this->content->text = $OUTPUT->render_from_template('block_secretsanta/content', $data);;
-        $this->content->footer = '';
-
-        return $this->content;
+        return $data;
     }
 
     public function can_draw($context) {

@@ -31,6 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 
 class secretsanta {
 
+    /** @var int State before an assignment has been drawn. */
+    const STATE_INITIAL = 0;
+
+    /** @var int State after draw. */
+    const STATE_DRAWN = 1;
+
     /** Id of the course this block instance has been added to. */
     private int $courseid;
 
@@ -75,7 +81,7 @@ class secretsanta {
         $dataobject->id = $this->instanceid;
         $dataobject->courseid = $this->courseid;
         $dataobject->draw = $draw;
-        $dataobject->state = 1;
+        $dataobject->state = self::STATE_DRAWN;
         $this->draw = $draw;
         $DB->update_record('block_secretsanta', $dataobject);
     }
@@ -86,7 +92,7 @@ class secretsanta {
         $dataobject->id = $this->instanceid;
         $dataobject->courseid = $this->courseid;
         $dataobject->draw = '';
-        $dataobject->state = 0;
+        $dataobject->state = self::STATE_INITIAL;
         $this->draw = '';
         $DB->update_record('block_secretsanta', $dataobject);
     }
@@ -104,6 +110,10 @@ class secretsanta {
      */
     protected function get_enrolled_user_infos() {
         return $this->enrolled_user_infos;
+    }
+
+    public function has_too_few_users() {
+        return empty($this->enrolled_user_ids) || count($this->enrolled_user_ids) < 3;
     }
 
     /**
@@ -159,11 +169,19 @@ class secretsanta {
     }
 
     /**
-     * Get the name of the user drawn for the current user.
+     * Check wether state is STATE_DRAWN.
+     * @return bool
+     */
+    public function is_drawn() {
+        return $this->state === self::STATE_DRAWN;
+    }
+
+    /**
+     * Get the name of the user drawn for the given user.
+     * @param int userid
      * @return string containing name and surname of the drawn match.
      */
-    public function get_draw_for_current_user() {
-        global $USER;
+    public function get_draw_for_user($userid) {
         $draw = $this->draw;
         if (empty($draw)) {
             return '';
@@ -172,7 +190,7 @@ class secretsanta {
             array_values(
                 array_filter(
                     json_decode($draw, true),
-                    fn ($element) => (int)$element[0] === (int)$USER->id
+                    fn ($element) => (int)$element[0] === $userid
                 )
             )[0]
         )[1];

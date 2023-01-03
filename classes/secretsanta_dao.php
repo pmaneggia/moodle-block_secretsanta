@@ -18,7 +18,7 @@
  * Data access for block_secretsanta.
  *
  * @package    block_secretsanta
- * @copyright  2022 Paola Maneggia
+ * @copyright  2022-23 Paola Maneggia
  * @author     Paola Maneggia <paola.maneggia@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,7 +29,12 @@ class secretsanta_dao {
 
     public static function read_instance($courseid) {
         global $DB;
-        $secretsantarecord = $DB->get_record('block_secretsanta', ['courseid' => $courseid], 'id, courseid, state, draw', MUST_EXIST);
+        $secretsantarecord = $DB->get_record(
+            'block_secretsanta',
+            ['courseid' => $courseid],
+            'id, courseid, state, draw, selectedparticipants',
+            MUST_EXIST
+        );
         $userinfos = get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id, u.firstname, u.lastname');
         return new \block_secretsanta\secretsanta($secretsantarecord, $userinfos);
     }
@@ -42,11 +47,13 @@ class secretsanta_dao {
     public static function insert_initial($courseid) {
         // Add an entry to the table {block_secretsanta} representing an instance in initial state.
         global $DB;
-        $data = new \stdClass();
-        $data->courseid = $courseid;
-        $data->state = \block_secretsanta\secretsanta::STATE_INITIAL;
-        $data->draw = '';
-        $DB->insert_record('block_secretsanta', $data);
+        $DB->insert_record(
+            'block_secretsanta',
+            \block_secretsanta\secretsanta::create_initial_db_row(
+                $courseid,
+                array_keys(get_enrolled_users(\context_course::instance($courseid), '', 0, 'u.id'))
+            )
+        );
     }
 
     public static function delete($courseid) {

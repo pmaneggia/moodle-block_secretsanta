@@ -94,6 +94,8 @@ class block_secretsanta extends block_base {
         $data->candraw = $this->can_draw($context) && !$data->toofewusers;
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
+        $mform = new \block_secretsanta\selectparticipants_form(null, array('courseid' => $courseid));
+        $data->selectusersform = $mform->render();
         $data->users = print_r(
             array_map(
                 fn($element) => $element['firstname'] . ' ' . $element['lastname'],

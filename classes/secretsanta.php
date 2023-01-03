@@ -55,6 +55,9 @@ class secretsanta {
     /** Infos (id, firstname, lastname) of users enrolled in the course. */
     private array $enrolled_user_infos;
 
+    /** Ids of the users that have been selected as participants. */
+    private array $selectedparticipants;
+
     /**
      * Initialise the fields of this object for a given instance.
      * @param array $sectresantarecord record for this instance storing state and draw.
@@ -67,10 +70,20 @@ class secretsanta {
         $this->draw = $secretsantarecord->draw;
         $this->enrolled_user_infos = $userinfos;
         $this->enrolled_user_ids = array_keys($userinfos);
+        $this->selectedparticipants = json_decode($secretsantarecord->selectedparticipants);
+    }
+
+    public static function create_initial_db_row($courseid, $userids) {
+        $data = new stdClass();
+        $data->courseid = $courseid;
+        $data->state = \block_secretsanta\secretsanta::STATE_INITIAL;
+        $data->draw = '';
+        $data->selectedparticipants = json_encode($userids);
+        return $data;
     }
 
     public function draw() {
-        $this->draw = json_encode($this->compute_draw($this->enrolled_user_ids));
+        $this->draw = json_encode($this->compute_draw($this->selectedparticipants));
         $this->state = self::STATE_DRAWN;
     }
 
@@ -79,12 +92,17 @@ class secretsanta {
         $this->state = self::STATE_INITIAL;
     }
 
+    public function set_selectedparticipants($participants) {
+        $this->selectedparticipants = $participants;
+    }
+
     public function as_db_row() {
         $dataobject = new stdClass();
         $dataobject->id = $this->instanceid;
         $dataobject->courseid = $this->courseid;
         $dataobject->state = $this->state;
         $dataobject->draw = $this->draw;
+        $dataobject->selectedparticipants = json_encode($this->selectedparticipants);
         return $dataobject;
     }
 
@@ -104,7 +122,7 @@ class secretsanta {
     }
 
     public function has_too_few_users() {
-        return empty($this->enrolled_user_ids) || count($this->enrolled_user_ids) < 3;
+        return empty($this->selectedparticipants) || count($this->selectedparticipants) < 3;
     }
 
     /**
@@ -168,6 +186,14 @@ class secretsanta {
     }
 
     /**
+     * Get userids of users enrolled in the course and selected as participants.
+     * @return int[]
+     */
+    public function get_selectedparticipants() {
+        return $this->selectedparticipants;
+    }
+
+    /**
      * Get the name of the user drawn for the given user.
      * @param int userid
      * @return string containing name and surname of the drawn match.
@@ -187,5 +213,13 @@ class secretsanta {
         )[1];
         $targetuserinfos = $this->enrolled_user_infos[$targetuserid];
         return $targetuserinfos->firstname . ' ' . $targetuserinfos->lastname;
+    }
+
+    /**
+     * Is the given user among the participating ones?
+     * @return boolean true if the user is participating.
+     */
+    public function is_participating($userid) {
+        return array_search($userid, $this->selectedparticipants) !== false;
     }
 }

@@ -55,5 +55,20 @@ function xmldb_block_secretsanta_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2022121100, 'secretsanta');
     }
 
+    if ($oldversion < 2023010300) {
+
+        // Define field selectedparticipants to be added to block_secretsanta.
+        $table = new xmldb_table('block_secretsanta');
+        $field = new xmldb_field('selectedparticipants', XMLDB_TYPE_TEXT, null, null, null, null, null, 'draw');
+
+        // Conditionally launch add field selectedparticipants.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Secretsanta savepoint reached.
+        upgrade_block_savepoint(true, 2023010300, 'secretsanta');
+    }
+
     return true;
 }

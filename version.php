@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022121100;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2023010300;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->supported = [400, 400];        // Supports these Moodle versions (since MDL-59562).
 $plugin->requires = 2022041200.00;      // Requires this Moodle version.
 $plugin->component = 'block_secretsanta';

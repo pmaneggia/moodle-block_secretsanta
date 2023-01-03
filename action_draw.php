@@ -51,7 +51,9 @@ if (!$confirm) {
     echo $OUTPUT->confirm(get_string('draw', 'block_secretsanta'), $optionsyes, $optionsno);
 } else {
     if (confirm_sesskey()) {
-        (new \block_secretsanta\secretsanta($courseid))->draw();
+        $secretsanta = \block_secretsanta\secretsanta_dao::read_instance($courseid);
+        $secretsanta->draw();
+        \block_secretsanta\secretsanta_dao::update($secretsanta);
     } else {
         print_error('sessionerror', 'block_simplehtml');
     }

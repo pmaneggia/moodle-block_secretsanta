@@ -50,21 +50,14 @@ class block_secretsanta extends block_base {
      * {@inheritDoc}
      */
     public function instance_create() {
-        // Add an entry to the table {block_secretsanta} representing an instance in initial state.
-        global $DB;
-        $data = new stdClass();
-        $data->courseid = $this->page->course->id;
-        $data->state = \block_secretsanta\secretsanta::STATE_INITIAL;
-        $data->draw = '';
-        $DB->insert_record('block_secretsanta', $data);
+        \block_secretsanta\secretsanta_dao::insert_initial($this->page->course->id);
     }
 
     /**
      * {@inheritDoc}
      */
     function instance_delete() {
-        global $DB;
-        $DB->delete_records('block_secretsanta', ['courseid' => $this->page->course->id]);
+        \block_secretsanta\secretsanta_dao::delete($this->page->course->id);
         return true;
     }
 
@@ -85,17 +78,19 @@ class block_secretsanta extends block_base {
 
     protected function compute_data() {
         $courseid = $this->page->course->id;
-        $context = context_course::instance($courseid);
-        $secretsanta = new \block_secretsanta\secretsanta($courseid);
-        return $this->extract_data($courseid, $context, $secretsanta);
+        return $this->extract_data(
+            $courseid,
+            \block_secretsanta\secretsanta_dao::read_instance($courseid)
+        );
     }
 
-    protected function extract_data($courseid, $context, $secretsanta) {
+    protected function extract_data($courseid, $secretsanta) {
         global $USER;
         $data = new stdClass();
         $data->toofewusers = $secretsanta->has_too_few_users();
         $data->drawn = $secretsanta->is_drawn();
         $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_user((int)$USER->id);
+        $context = context_course::instance($courseid);
         $data->candraw = $this->can_draw($context) && !$data->toofewusers;
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);

@@ -56,45 +56,36 @@ class secretsanta {
     private array $enrolled_user_infos;
 
     /**
-     * Initialise the fields of this object for a given courseid.
+     * Initialise the fields of this object for a given instance.
+     * @param array $sectresantarecord record for this instance storing state and draw.
+     * @param array $userinfos users relevant for this instance with id, firstname and lastname.
      */
-    public function __construct($courseid) {
-        $this->courseid = $courseid;
-        $this->load_data();
-        $this->populate_user_fields();
+    public function __construct($secretsantarecord, $userinfos) {
+        $this->courseid = $secretsantarecord->courseid;
+        $this->instanceid = $secretsantarecord->id;
+        $this->state = $secretsantarecord->state;
+        $this->draw = $secretsantarecord->draw;
+        $this->enrolled_user_infos = $userinfos;
+        $this->enrolled_user_ids = array_keys($userinfos);
     }
 
     public function draw() {
-        $this->save_draw(json_encode($this->compute_draw($this->enrolled_user_ids)));
+        $this->draw = json_encode($this->compute_draw($this->enrolled_user_ids));
+        $this->state = self::STATE_DRAWN;
     }
 
     public function reset() {
-        $this->clean_draw();
-    }
-
-    protected function save_draw($draw) {
-        global $DB;
-        $dataobject = new stdClass();
-        if (empty($this->instanceid)) {
-            $this->load_data();
-        }
-        $dataobject->id = $this->instanceid;
-        $dataobject->courseid = $this->courseid;
-        $dataobject->draw = $draw;
-        $dataobject->state = self::STATE_DRAWN;
-        $this->draw = $draw;
-        $DB->update_record('block_secretsanta', $dataobject);
-    }
-
-    protected function clean_draw() {
-        global $DB;
-        $dataobject = new stdClass();
-        $dataobject->id = $this->instanceid;
-        $dataobject->courseid = $this->courseid;
-        $dataobject->draw = '';
-        $dataobject->state = self::STATE_INITIAL;
         $this->draw = '';
-        $DB->update_record('block_secretsanta', $dataobject);
+        $this->state = self::STATE_INITIAL;
+    }
+
+    public function as_db_row() {
+        $dataobject = new stdClass();
+        $dataobject->id = $this->instanceid;
+        $dataobject->courseid = $this->courseid;
+        $dataobject->state = $this->state;
+        $dataobject->draw = $this->draw;
+        return $dataobject;
     }
 
     /**
@@ -197,24 +188,4 @@ class secretsanta {
         $targetuserinfos = $this->enrolled_user_infos[$targetuserid];
         return $targetuserinfos->firstname . ' ' . $targetuserinfos->lastname;
     }
-
-    /**
-     * Load the current data for this instance from the database.
-     */
-    public function load_data() {
-        global $DB;
-        $data = $DB->get_record('block_secretsanta', ['courseid' => $this->courseid], 'id, state, draw', MUST_EXIST);
-        $this->instanceid = $data->id;
-        $this->state = $data->state;
-        $this->draw = $data->draw;
-    }
-
-    /**
-     * Populate user fields relevant for the draw.
-     */
-    private function populate_user_fields() {
-        $this->enrolled_user_infos = get_enrolled_users(\context_course::instance($this->courseid), '', 0, 'u.id, u.firstname, u.lastname');
-        $this->enrolled_user_ids = array_keys($this->enrolled_user_infos);
-    }
-
 }

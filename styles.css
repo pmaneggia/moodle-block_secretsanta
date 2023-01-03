@@ -1,11 +1,4 @@
-div.block_secretsanta_content {
-    font-size: 1.2rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1.2rem 0.5rem;
-}
-
 div.block_secretsanta_content .name {
-        font-weight: bold;
-        color: rgb(12, 70, 70);
+    font-weight: bold;
+    color: rgb(12, 70, 70);
 }

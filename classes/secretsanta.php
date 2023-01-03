@@ -70,9 +70,16 @@ class secretsanta {
         $this->draw = $secretsantarecord->draw;
         $this->enrolled_user_infos = $userinfos;
         $this->enrolled_user_ids = array_keys($userinfos);
-        $this->selectedparticipants = json_decode($secretsantarecord->selectedparticipants);
+        $this->selectedparticipants = json_decode($secretsantarecord->selectedparticipants ?? '[]');
     }
 
+    /**
+     * Data to be persisted when first creating an instance for a course.
+     * In initial state there exist no draw and the selected participants are
+     * by default all users enrolled in the course.
+     * @param int $courseid id of the course for which an instance has to be created.
+     * @param array $userids id of all users enrolled in the course.
+     */
     public static function create_initial_db_row($courseid, $userids) {
         $data = new stdClass();
         $data->courseid = $courseid;
@@ -82,20 +89,37 @@ class secretsanta {
         return $data;
     }
 
+    /**
+     * Draw secret santa among the selected participants.
+     */
     public function draw() {
         $this->draw = json_encode($this->compute_draw($this->selectedparticipants));
         $this->state = self::STATE_DRAWN;
     }
 
+    /**
+     * Reset: draw empty, initial state, list of selected participants back
+     * to the default value of containing all the users enrolled in the course.
+     */
     public function reset() {
         $this->draw = '';
         $this->state = self::STATE_INITIAL;
+        $this->selectedparticipants = $this->enrolled_user_ids;
     }
 
+    /**
+     * Set the list of selected participants.
+     * @paran int[] $participants list of user ids.
+     */
     public function set_selectedparticipants($participants) {
         $this->selectedparticipants = $participants;
     }
 
+    /**
+     * Give the fields needed for updating the corresponding entry
+     * in the database.
+     * @return stdClass data object
+     */
     public function as_db_row() {
         $dataobject = new stdClass();
         $dataobject->id = $this->instanceid;
@@ -116,6 +140,7 @@ class secretsanta {
 
     /**
      * Get array of userids, firstname and lastname fields of users enrolled in course.
+     * @return array
      */
     protected function get_enrolled_user_infos() {
         return $this->enrolled_user_infos;
@@ -200,7 +225,7 @@ class secretsanta {
      */
     public function get_draw_for_user($userid) {
         $draw = $this->draw;
-        if (empty($draw)) {
+        if (empty($draw) || !array_search($userid, $this->selectedparticipants)) {
             return '';
         }
         $targetuserid = (
@@ -211,6 +236,10 @@ class secretsanta {
                 )
             )[0]
         )[1];
+        // It can happen that the target user in the meantime unenrolled from the course.
+        if (!array_key_exists($targetuserid, $this->enrolled_user_infos)) {
+            return '';
+        }
         $targetuserinfos = $this->enrolled_user_infos[$targetuserid];
         return $targetuserinfos->firstname . ' ' . $targetuserinfos->lastname;
     }

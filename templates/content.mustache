@@ -46,15 +46,25 @@
       {{/toofewusers}}
     {{/drawn}}
     {{#drawn}}
+      {{^isparticipating}}
+        <div>{{#str}}notparticipating, block_secretsanta{{/str}}</div>
+      {{/isparticipating}}
+      {{#isparticipating}}
+      {{^notargetuser}}
       <div>{{#str}}you_are, block_secretsanta{{/str}}<span class="name">🌲  {{name}}</span></div>
+      {{/notargetuser}}
+      {{#notargetuser}}
+      <div>{{#str}}targetusernotfound, block_secretsanta{{/str}}</div>
+      {{/notargetuser}}
+      {{/isparticipating}}
     {{/drawn}}
   </div>
   {{#candraw}}
     <div class="d-flex justify-content-center">
       <form method="post">
         <input type="hidden"/>
-        <input type="submit" class="draw btn btn-primary mx-1" data-action="draw" formaction="{{drawurl}}" value="{{#str}}draw, block_secretsanta{{/str}}"/>
-        <input type="submit" class="reset btn btn-primary mx-1" data-action="reset" formaction="{{reseturl}}" value="{{#str}}reset, block_secretsanta{{/str}}"/>
+        <input type="submit" class="draw btn btn-primary m-1" data-action="draw" formaction="{{drawurl}}" value="{{#str}}draw, block_secretsanta{{/str}}"/>
+        <input type="submit" class="reset btn btn-primary m-1" data-action="reset" formaction="{{reseturl}}" value="{{#str}}reset, block_secretsanta{{/str}}"/>
       </form>
     </div>
     <div>

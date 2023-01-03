@@ -37,3 +37,5 @@ $string['secretsanta:draw'] = 'Auslosen und Zurücksetzen des Wichtelns.';
 $string['secretsanta:canviewresult'] = 'Das Ergebnis des Auslosens für alle Nutzer ansehen.';
 $string['selectparticipants'] = 'Teilnehmer/innen auswählen';
 $string['selectparticipantssubmit'] = 'Auswählen';
+$string['targetusernotfound'] = 'Leider ist der Zielnutzer nicht mehr in diesem Kurs eingeschrieben.';
+$string['notparticipating'] = 'Leider bist du diesmal nicht dabei.';

@@ -37,3 +37,5 @@ $string['secretsanta:draw'] = 'Draw and reset Secret Santa.';
 $string['secretsanta:canviewresult'] = 'View the result of the draw for all users.';
 $string['selectparticipants'] = 'Select participants';
 $string['selectparticipantssubmit'] = 'Select';
+$string['targetusernotfound'] = 'Sorry, your target user is not enrolled in this course anymore.';
+$string['notparticipating'] = 'Sorry, you are not participating this time.';

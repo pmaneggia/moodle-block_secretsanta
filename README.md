@@ -2,19 +2,26 @@
 
 ### WIP - not ready yet, but it is already usable!
 
-It is this time of the year again! Do Secret Santa with your friends in a Moodle course with this plugin! Just straighforward, no extras (no opt in or out, no exclusion of people, no wishes/interests...).
+It is this time of the year again! Do Secret Santa in a Moodle course with this plugin!
 
 #### How it works
-Teachers (editingteacher) can perform the actions "draw" and "reset", they have buttons on the block to do so. Managers can also view the result of the draw, this is not normally shown to teachers, so that they can also take part without spoilers. Normal users enrolled in the course see the result of the draw that is relevant for themeselves or a text saying that the draw did not take place yet.
+Add this block to a course to do Sectet Santa among the users enrolled in the course.
+
+Normal users enrolled in the course see the result of the draw that is relevant for themeselves or a text saying that the draw did not take place yet.
+
+Priviledged users, normally teachers (role `editingteacher`), can perform the actions "draw" and "reset". They do however not see the global result of the draw, so that they can take part without spoilers. Users with more rights, normally managers (role `manager`), can also view the result of the draw.
+
+##### New feature: select participating users
+
+It is now possible for a teacher to select which users among the ones enrolled in the course will participate in the draw.
+
+By default all users are selected as participating. Resetting will also restore this default configuration.
+
+In some future versions there will be a graphical representation of the result of the draw.
 
 
-In some future versions there will be:
-
-* An option to exclude the teachers from taking part.
-* A graphical representation of the result of the draw.
-
-
-The behaviour described above is controlled by capabilites (`secretsanta:draw` by default set to allow for `editingteacher` and manager and `secretsanta:canviewresult` set to allow for role `manager`).
+#### For site administators
+The visibility described in the section **How it works** is controlled by capabilites (`secretsanta:draw` by default set to allow for `editingteacher` and manager and `secretsanta:canviewresult` set to allow for role `manager`).
 
 
 #### Installation

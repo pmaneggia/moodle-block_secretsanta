@@ -26,7 +26,7 @@
 require_once('../../config.php');
 
 $courseid = required_param('courseid', PARAM_INT);
-$participants = required_param('participants', PARAM_TEXT);
+$participants = required_param_array('participants', PARAM_TEXT);
 
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourse', 'block_secretsanta', $courseid);

@@ -88,13 +88,21 @@ class block_secretsanta extends block_base {
         global $USER;
         $data = new stdClass();
         $data->toofewusers = $secretsanta->has_too_few_users();
+        $data->isparticipating = $secretsanta->is_participating($USER->id);
         $data->drawn = $secretsanta->is_drawn();
         $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_user((int)$USER->id);
+        $data->notargetuser = $data->name === '';
         $context = context_course::instance($courseid);
-        $data->candraw = $this->can_draw($context) && !$data->toofewusers;
+        $data->candraw = $this->can_draw($context);
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
-        $mform = new \block_secretsanta\selectparticipants_form(null, array('courseid' => $courseid));
+        $mform = new \block_secretsanta\selectparticipants_form(
+            new moodle_url('/blocks/secretsanta/action_selectparticipants.php', ['courseid' => $courseid]),
+            array(
+                'courseid' => $courseid,
+                'selectedparticipants' => $secretsanta->get_selectedparticipants()
+            )
+        );
         $data->selectusersform = $mform->render();
         $data->users = print_r(
             array_map(

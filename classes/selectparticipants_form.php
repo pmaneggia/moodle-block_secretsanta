@@ -38,13 +38,7 @@ class selectparticipants_form extends \moodleform {
             },
             get_enrolled_users(\context_course::instance($this->_customdata['courseid']), '', 0, 'u.id, u.firstname, u.lastname')
         );
-        print_r($participants);
-
-        $options = array(
-            'multiple' => true,
-            'noselectionstring' => get_string('selectparticipants', 'block_secretsanta'),
-        );
-        $mform->addElement('autocomplete', 'selectparticipants', get_string('selectparticipants', 'block_secretsanta'), $participants, $options);
+        $selectedparticipants = $this->_customdata['selectedparticipants'];
 
         $select = $mform->addElement(
             'select',
@@ -54,7 +48,8 @@ class selectparticipants_form extends \moodleform {
             []
         );
         $select->setMultiple(true);
-        //$mform->setDefault('email',$this->_customdata['email'])
+        $select->setSize($participants ? count($participants) : 1);
+        $select->setSelected($selectedparticipants);
         $mform->addElement('submit', 'submitbutton', get_string('selectparticipantssubmit', 'block_secretsanta'));
     }
 }

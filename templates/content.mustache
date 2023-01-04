@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template block_secretsanta/result
+    @template block_secretsanta/content
 
     Template purpose and description.
 
@@ -31,7 +31,16 @@
     Example context (json):
     {
       "drawn": true,
-      "name": "Paola"
+      "toofewusers": false,
+      "isparticipating": true,
+      "notargetuser": false
+      "name": "Paola",
+      "candraw": true,
+      "drawurl": "mysite/blocks/secretsanta/action_draw.php",
+      "reseturl": "mysite/blocks/secretsanta/action_reset.php"
+      "selectusersform": "<form> ... </form>".
+      "canviewresult": true,
+      "viewdrawurl": "mysite/blocks/secretsanta/view_draw.php",
     }
 }}
 
@@ -72,8 +81,10 @@
     </div>
   {{/candraw}}
   {{#canviewresult}}
-  <div><pre>{{users}}</pre></div>
-  <div><pre>{{pairs}}</pre></div>
+    <form method="post">
+        <input type="hidden"/>
+        <input type="submit" class="draw btn btn-primary mx-1" data-action="viewdraw" formaction="{{viewdrawurl}}" value="{{#str}}viewdraw, block_secretsanta{{/str}}"/>
+      </form>
   {{/canviewresult}}
 </div>
 

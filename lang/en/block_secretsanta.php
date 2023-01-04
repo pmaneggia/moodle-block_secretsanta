@@ -39,3 +39,9 @@ $string['selectparticipants'] = 'Select participants';
 $string['selectparticipantssubmit'] = 'Select';
 $string['targetusernotfound'] = 'Sorry, your target user is not enrolled in this course anymore.';
 $string['notparticipating'] = 'Sorry, you are not participating this time.';
+$string['viewdraw'] = 'View draw';
+$string['viewdrawpageheading'] = 'Secret santa draw result';
+$string['backtocourse'] = 'Back to course';
+$string['from'] = 'From';
+$string['to'] = 'To';
+

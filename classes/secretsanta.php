@@ -225,7 +225,7 @@ class secretsanta {
      */
     public function get_draw_for_user($userid) {
         $draw = $this->draw;
-        if (empty($draw) || !array_search($userid, $this->selectedparticipants)) {
+        if (empty($draw) || !in_array($userid, $this->selectedparticipants)) {
             return '';
         }
         $targetuserid = (

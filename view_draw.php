@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * PHP side implementation of the action select participants.
+ * View of the result.
  *
  * @package    block_secretsanta
- * @copyright  2023 Paola Maneggia
+ * @copyright  2022 Paola Maneggia
  * @author     Paola Maneggia <paola.maneggia@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,26 +26,29 @@
 require_once('../../config.php');
 
 $courseid = required_param('courseid', PARAM_INT);
-$participants = required_param_array('participants', PARAM_TEXT);
 
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourse', 'block_secretsanta', $courseid);
 }
 
 require_login($course);
-require_capability('block/secretsanta:draw', context_course::instance($courseid));
+require_capability('block/secretsanta:canviewresult', context_course::instance($courseid));
 
 if(!$instanceid = $DB->get_record('block_secretsanta', array('courseid' => $courseid))) {
     print_error('noinstance', 'block_secretsanta', '', $instanceid);
 }
 
-$PAGE->set_url('/blocks/secretsanta/action_selectparticipants.php', array('courseid' => $courseid));
+$PAGE->set_url('/blocks/secretsanta/view_draw.php', array('courseid' => $courseid));
+$heading = get_string('viewdrawpageheading', 'block_secretsanta');
+$PAGE->set_heading($heading);
+$PAGE->set_title('Secret Santa draw result');
+$PAGE->set_secondary_navigation(false);
 
-if (confirm_sesskey()) {
-    $secretsanta = \block_secretsanta\secretsanta_dao::read_instance($courseid);
-    $secretsanta->set_selectedparticipants($participants);
-    \block_secretsanta\secretsanta_dao::update($secretsanta);
-} else {
-    print_error('sessionerror', 'block_simplehtml');
-}
-redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
+echo $OUTPUT->header();
+$renderable = new block_secretsanta\output\view_draw_page(
+    $courseid,
+    \block_secretsanta\secretsanta_dao::read_instance($courseid)->get_draw()
+);
+$renderer = $PAGE->get_renderer('block_secretsanta');
+echo $renderer->render($renderable);
+echo $OUTPUT->footer();

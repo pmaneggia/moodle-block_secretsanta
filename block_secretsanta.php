@@ -90,7 +90,7 @@ class block_secretsanta extends block_base {
         $data->toofewusers = $secretsanta->has_too_few_users();
         $data->isparticipating = $secretsanta->is_participating($USER->id);
         $data->drawn = $secretsanta->is_drawn();
-        $data->name = $data->toofewusers || !$data->drawn ? '' : $secretsanta->get_draw_for_user((int)$USER->id);
+        $data->name = ($data->toofewusers || !$data->drawn) ? '' : $secretsanta->get_draw_for_user((int)$USER->id);
         $data->notargetuser = $data->name === '';
         $context = context_course::instance($courseid);
         $data->candraw = $this->can_draw($context);
@@ -104,14 +104,7 @@ class block_secretsanta extends block_base {
             )
         );
         $data->selectusersform = $mform->render();
-        $data->users = print_r(
-            array_map(
-                fn($element) => $element['firstname'] . ' ' . $element['lastname'],
-                json_decode(json_encode(get_enrolled_users($context, '', 0, 'u.id, u.firstname, u.lastname')), true)
-            ),
-            true
-        );
-        $data->pairs = print_r($secretsanta->get_draw(), true);
+        $data->viewdrawurl = new moodle_url('/blocks/secretsanta/view_draw.php', ['courseid' => $courseid]);
         $data->canviewresult = $this->can_view_result($context);
         return $data;
     }

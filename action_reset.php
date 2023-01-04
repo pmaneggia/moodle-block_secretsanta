@@ -33,6 +33,7 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
 }
 
 require_login($course);
+require_capability('block/secretsanta:draw', context_course::instance($courseid));
 
 if(!$instanceid = $DB->get_record('block_secretsanta', array('courseid' => $courseid))) {
     print_error('noinstance', 'block_secretsanta', '', $instanceid);

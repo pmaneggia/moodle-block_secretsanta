@@ -96,14 +96,16 @@ class block_secretsanta extends block_base {
         $data->candraw = $this->can_draw($context);
         $data->drawurl = new moodle_url('/blocks/secretsanta/action_draw.php', ['courseid' => $courseid]);
         $data->reseturl = new moodle_url('/blocks/secretsanta/action_reset.php', ['courseid' => $courseid]);
-        $mform = new \block_secretsanta\selectparticipants_form(
-            new moodle_url('/blocks/secretsanta/action_selectparticipants.php', ['courseid' => $courseid]),
-            array(
-                'courseid' => $courseid,
-                'selectedparticipants' => $secretsanta->get_selectedparticipants()
-            )
-        );
-        $data->selectusersform = $mform->render();
+        if (!$secretsanta->is_drawn()) {
+            $mform = new \block_secretsanta\selectparticipants_form(
+                new moodle_url('/blocks/secretsanta/action_selectparticipants.php', ['courseid' => $courseid]),
+                array(
+                    'courseid' => $courseid,
+                    'selectedparticipants' => $secretsanta->get_selectedparticipants()
+                )
+            );
+            $data->selectusersform = $mform->render();
+        }
         $data->viewdrawurl = new moodle_url('/blocks/secretsanta/view_draw.php', ['courseid' => $courseid]);
         $data->canviewresult = $this->can_view_result($context);
         return $data;

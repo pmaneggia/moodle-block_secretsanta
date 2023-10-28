@@ -112,6 +112,8 @@ class secretsanta {
      * @paran int[] $participants list of user ids.
      */
     public function set_selectedparticipants($participants) {
+        // Only change selected participants if the draw was reset.
+        if ($this->draw) return;
         $this->selectedparticipants = $participants;
     }
 

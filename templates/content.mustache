@@ -31,6 +31,7 @@
     Example context (json):
     {
       "drawn": true,
+      "starurl": "/blocks/secretsanta/pix/star.svg"
       "toofewusers": false,
       "isparticipating": true,
       "notargetuser": false
@@ -45,29 +46,32 @@
 }}
 
 <div class="block_secretsanta_content">
-  <div class="d-flex justify-content-center p-2">
-    {{^drawn}}
-      {{#toofewusers}}
-      <div>{{#str}}toofewusers, block_secretsanta{{/str}}</div>
-      {{/toofewusers}}
-      {{^toofewusers}}
-      <div>{{#str}}waiting, block_secretsanta{{/str}}</div>
-      {{/toofewusers}}
-    {{/drawn}}
-    {{#drawn}}
-      {{^isparticipating}}
-        <div>{{#str}}notparticipating, block_secretsanta{{/str}}</div>
-      {{/isparticipating}}
-      {{#isparticipating}}
-      {{^notargetuser}}
-      <div>{{#str}}you_are, block_secretsanta{{/str}}<span class="name">🌲  {{name}}</span></div>
-      {{/notargetuser}}
-      {{#notargetuser}}
-      <div>{{#str}}targetusernotfound, block_secretsanta{{/str}}</div>
-      {{/notargetuser}}
-      {{/isparticipating}}
-    {{/drawn}}
-  </div>
+    <div class="d-flex card text-center">
+      <img class="card-img" src="{{starurl}}" alt="">
+        <div class="card-img-overlay">
+        {{^drawn}}
+          {{#toofewusers}}
+          <div>{{#str}}toofewusers, block_secretsanta{{/str}}</div>
+          {{/toofewusers}}
+          {{^toofewusers}}
+          <div>{{#str}}waiting, block_secretsanta{{/str}}</div>
+          {{/toofewusers}}
+        {{/drawn}}
+        {{#drawn}}
+          {{^isparticipating}}
+            <div>{{#str}}notparticipating, block_secretsanta{{/str}}</div>
+          {{/isparticipating}}
+          {{#isparticipating}}
+          {{^notargetuser}}
+          <div>{{#str}}you_are, block_secretsanta{{/str}}<span class="name">{{name}}</span></div>
+          {{/notargetuser}}
+          {{#notargetuser}}
+          <div>{{#str}}targetusernotfound, block_secretsanta{{/str}}</div>
+          {{/notargetuser}}
+          {{/isparticipating}}
+        {{/drawn}}
+        </div>
+    </div>
   {{#candraw}}
     <div class="d-flex justify-content-center">
       <form method="post">
@@ -81,10 +85,12 @@
     </div>
   {{/candraw}}
   {{#canviewresult}}
-    <form method="post">
-        <input type="hidden"/>
-        <input type="submit" class="draw btn btn-primary mx-1" data-action="viewdraw" formaction="{{viewdrawurl}}" value="{{#str}}viewdraw, block_secretsanta{{/str}}"/>
-      </form>
+    <div class="d-flex justify-content-center">
+      <form method="post">
+          <input type="hidden"/>
+          <input type="submit" class="draw btn btn-primary mx-1" data-action="viewdraw" formaction="{{viewdrawurl}}" value="{{#str}}viewdraw, block_secretsanta{{/str}}"/>
+        </form>
+    </div>
   {{/canviewresult}}
 </div>
 

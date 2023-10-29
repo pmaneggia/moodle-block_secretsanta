@@ -87,6 +87,7 @@ class block_secretsanta extends block_base {
     protected function extract_data($courseid, $secretsanta) {
         global $USER;
         $data = new stdClass();
+        $data->starurl = new moodle_url('/blocks/secretsanta/pix/star.svg');
         $data->toofewusers = $secretsanta->has_too_few_users();
         $data->isparticipating = $secretsanta->is_participating($USER->id);
         $data->drawn = $secretsanta->is_drawn();

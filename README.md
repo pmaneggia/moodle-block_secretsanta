@@ -17,7 +17,7 @@ It is now possible for a teacher to select which users among the ones enrolled i
 
 By default all users are selected as participating. Resetting will also restore this default configuration.
 
-Planned for some future versions (also based on wellcome requests and feedback):
+Planned for some future versions (also based on welcome requests and feedback):
 * The possibility for participants to opt out.
 * A graphical representation of the result of the draw.
 * Possibility to customize texts to be displayed.
